@@ -1,0 +1,14 @@
+{
+  "name": "@IMAGE@/@NAME@",
+  "description": "@DESC@",
+  "provider": "libvirt",
+  "format": "qcow2",
+  "virtual_size": @DISK@,
+  "versions": [{
+      "version": "@VERSION@",
+      "providers": [{
+          "name": "libvirt",
+          "url": "@URL@"
+      }]
+  }]
+}

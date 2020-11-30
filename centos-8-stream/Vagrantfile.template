@@ -1,0 +1,15 @@
+Vagrant.configure("2") do |config|
+  config.vm.provider :libvirt do |libvirt|
+    libvirt.driver = "kvm"
+    libvirt.host = 'localhost'
+    libvirt.uri = 'qemu:///system'
+  end
+  config.vm.define "new" do |custombox|
+    custombox.vm.box = "custombox"
+    custombox.vm.provider :libvirt do |test|
+      test.memory = @MEM@
+      test.cpus = @VCPU@
+    end
+  end
+end
+
