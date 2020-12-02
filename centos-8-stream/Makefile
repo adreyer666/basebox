@@ -7,6 +7,7 @@ IMAGE = basebox
   DIR := $(shell pwd)
  NAME := $(shell basename $(DIR))
  DATE := $(shell date -uI)
+ TIME := $(shell date -u +%H%M%S)
    YQ := $(shell which yq)
    XQ := $(shell which xq)
    VM = $(NAME)_$(IMAGE)
@@ -38,7 +39,7 @@ tmp/metadata.json: .build.$(IMAGE) .requirements metadata.json.template
           GB=`expr $${DISK} / 1024 / 1024 / 1024`; \
           mkdir -p $(DIR)/tmp; \
           sed -e "s/@IMAGE@/$(IMAGE)/g" -e "s/@NAME@/$(NAME)/g" \
-	      -e "s/@VERSION@/$(DATE)/g" -e "s/@DESC@/$(DESC)/g" \
+	      -e "s/@VERSION@/$(DATE).$(TIME)/g" -e "s/@DESC@/$(DESC)/g" \
 	      -e "s!@URL@!file://$(DIR)/tmp/$(NAME).box!g" \
 	      -e "s/@DISK@/$${GB}/g" \
 	    < $(DIR)/metadata.json.template > $(DIR)/tmp/metadata.json;
@@ -51,12 +52,22 @@ tmp/Vagrantfile: .build.$(IMAGE) .requirements Vagrantfile.template
           mkdir -p $(DIR)/tmp; \
           sed -e "s/@MEM@/$${MB}/g" -e "s/@VCPU@/$${CPU}/g" < $(DIR)/Vagrantfile.template > $(DIR)/tmp/Vagrantfile;
 
-tmp/$(NAME).box: .build.$(IMAGE) .requirements stopvm tmp/Vagrantfile tmp/metadata.json
-	set -x; \
-	  IMG=`virsh dumpxml $(VM) | xq '.domain.devices.disk.source' | awk -NF\" '/@file/{print $$4}'`; \
-          mkdir -p $(DIR)/tmp; \
-	  sudo qemu-img convert -f raw -O qcow2 $${IMG}  $(DIR)/tmp/box.img
-	sudo chown `id -u` $(DIR)/tmp/box.img
+tmp/box.img: .build.$(IMAGE) .requirements stopvm
+	-set -x; \
+	  master=`virsh dumpxml $(VM) | xq '.domain.devices.disk.source' | awk -NF\" '/@file/{print $$4}'`; \
+	  base1=`sudo qemu-img info --backing-chain $${master} | awk '/backing file/{print $$3}' | grep '^/'`; \
+	  base2='/var/lib/libvirt/images/basebox.img'; \
+	  test "$${base1}" != '' -a "$${base2}" != '' \
+	  && sudo cp $${base1} $${base2} \
+	  && sudo qemu-img rebase -b $${base2} $${master} \
+	  && sudo qemu-img commit $${master} \
+	  && sudo qemu-img convert -f raw -O qcow2 $${base2} $(DIR)/tmp/box.img \
+	  && sudo mv $${base2} $${master} \
+	  && sudo qemu-img rebase -u $${master} \
+	  && virsh vol-dumpxml $${master} | xq 'del(.volume.backingStore)' -x > tmp/vol.xml
+	sudo chown `id -u`:`id -g` $(DIR)/tmp/box.img
+
+tmp/$(NAME).box: tmp/Vagrantfile tmp/metadata.json tmp/box.img
 	(cd $(DIR)/tmp && tar -cvzf $(NAME).box  ./metadata.json ./Vagrantfile ./box.img)
 	ls -la tmp/$(NAME).box
 
