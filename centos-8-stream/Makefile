@@ -62,6 +62,7 @@ tmp/box.img: .build.$(IMAGE) .requirements stopvm
 	  && sudo qemu-img rebase -b $${base2} $${master} \
 	  && sudo qemu-img commit $${master} \
 	  && sudo qemu-img convert -f raw -O qcow2 $${base2} $(DIR)/tmp/box.img \
+	  && sudo cp -a $${base2} $(DIR)/tmp/box.img \
 	  && sudo mv $${base2} $${master} \
 	  && sudo qemu-img rebase -u $${master} \
 	  && virsh vol-dumpxml $${master} | xq 'del(.volume.backingStore)' -x > tmp/vol.xml
