@@ -17,10 +17,11 @@ prep_os(){
     cifs-utils samba-common samba-common-libs samba-client-libs cups-libs mozjs52 \
     python3-dnf-plugin-spacewalk python3-rhn-client-tools python3-rhnlib rhn-client-tools \
     elfutils-debuginfod-client parted hwdata iprutils pciutils sg3_utils sg3_utils-libs \
+    subscription-manager-rhsm-certificates python3-subscription-manager-rhsm subscription-manager dnf-plugin-subscription-manager python3-syspurpose tuned \
     xkeyboard-config hyperv-daemons
+  dnf remove -y firewalld-filesystem   ## removes all firewall..
   dnf -y install \
     tar fuse procps iproute iptables nftables lsof psmisc curl ca-certificates sudo vim-minimal openssh-clients gnupg2
-  dnf remove -y firewalld-filesystem   ## removes all firewall..
   dnf -y reinstall kernel kernel-modules kernel-core
   latest=`rpm -q kernel | sed -e 's/^kernel-//g' | sort -t- -k2n | tail -1`
   /bin/kernel-install add ${latest} /boot/vmlinuz-${latest}.img

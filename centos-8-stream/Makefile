@@ -20,7 +20,7 @@ build: .build.$(IMAGE)
 	vagrant ssh-config > ~/.ssh/config.d/vagrant-$(IMAGE).conf
 
 id_rsa.pub:
-	ssh-keygen -q -t rsa -b 4096 -f $(DIR)/id_rsa -N ''
+	ssh-keygen -q -t rsa -b 4096 -C 'deploy@$(IMAGE)' -f $(DIR)/id_rsa -N ''
 
 run: .build.$(IMAGE)
 	ssh -X $(NAME)
