@@ -1,0 +1,23 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure(2) do |config|
+
+  config.vm.synced_folder ".", "/vagrant", type: "rsync"
+
+  config.vm.provider "libvirt" do |libvirt|
+    libvirt.memory = 1024
+    libvirt.cpus = 1
+    libvirt.channel :type => 'unix', :target_name => 'org.qemu.guest_agent.0', :target_type => 'virtio'
+    libvirt.channel :type => 'spicevmc', :target_name => 'com.redhat.spice.0', :target_type => 'virtio'
+    libvirt.driver = 'kvm'
+  end
+
+  config.vm.define "basebox" do |node|
+    node.vm.box = "generic/ubuntu2010"
+    node.vm.hostname = "basebox.example.com"
+    node.vm.provision "shell", path: "bootstrap.sh"
+  end
+
+end
+
