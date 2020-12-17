@@ -7,9 +7,9 @@ set -e -x
 prep_os(){
   dnf -y install 'dnf-command(config-manager)'  centos-release-stream
   dnf clean all
-  dnf config-manager --disable 'BaseOS'
-  dnf config-manager --disable 'AppStream'
-  dnf config-manager --disable 'extras'
+  dnf config-manager --disable 'BaseOS'    || :
+  dnf config-manager --disable 'AppStream' || :
+  dnf config-manager --disable 'extras'    || :
   dnf -y upgrade
   dnf remove -y  \
     cronie-anacron cronie crontabs \
@@ -22,7 +22,7 @@ prep_os(){
   dnf remove -y firewalld-filesystem   ## removes all firewall..
   dnf -y install \
     tar fuse procps iproute iptables nftables lsof psmisc curl ca-certificates sudo vim-minimal openssh-clients gnupg2
-  dnf -y reinstall kernel kernel-modules kernel-core
+  dnf -y reinstall kernel kernel-modules kernel-core || :
   latest=`rpm -q kernel | sed -e 's/^kernel-//g' | sort -t- -k2n | tail -1`
   /bin/kernel-install add ${latest} /boot/vmlinuz-${latest}.img
   sync

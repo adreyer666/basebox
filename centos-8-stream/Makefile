@@ -18,6 +18,7 @@ build: .build.$(IMAGE)
 	vagrant up --provider=libvirt 2>&1 | tee make.log \
 	  && touch .build.$(IMAGE)
 	vagrant ssh-config > ~/.ssh/config.d/vagrant-$(IMAGE).conf
+	chmod 0600 ~/.ssh/config.d/vagrant-$(NAME).conf
 
 id_rsa.pub:
 	ssh-keygen -q -t rsa -b 4096 -C 'deploy@$(IMAGE)' -f $(DIR)/id_rsa -N ''
