@@ -17,7 +17,7 @@ build: .build.$(IMAGE)
 .build.$(IMAGE): id_rsa.pub
 	vagrant up --provider=libvirt 2>&1 | tee make.log \
 	  && touch .build.$(IMAGE)
-	vagrant ssh-config > ~/.ssh/config.d/vagrant-$(IMAGE).conf
+	vagrant ssh-config > ~/.ssh/config.d/vagrant-$(NAME).conf
 	chmod 0600 ~/.ssh/config.d/vagrant-$(NAME).conf
 
 id_rsa.pub:
